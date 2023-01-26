@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+    environment {
+        MyRepo=credentials('mydetails')
+        ImageName='mynginxapp'
+        ImageTag='1.0'
+    }
+    stages {
+        stage('GitClone') {
+            steps {
+                echo 'Getting Updated Source Code from Github'
+                git branch: 'main', url: 'https://github.com/gouravchawate/Jenkins-Citadel-Assignment.git'
+            }
+        }
+        stage('BuildImage') {
+            steps {
+                echo 'Building Docker Image'
+                script {
+                    dockerImage = docker.build "$MyRepo_USR/$ImageName:$ImageTag"
+                       }
+            }
+        }
+        stage('PushImageToRepo') {
+           steps {
+                echo 'Push to Repo'
+                script {
+                    docker.withRegistry( '', 'mydetails' ) {
+                    dockerImage.push()
+                    }
+                    }
+             
+            }
+        }
+        stage('Deploy to Kubernetes') {
+          steps {
+               script {
+                    kubernetesDeploy(configs: "deploy.yml", kubeconfigId: "kubernetes")
+               }
+          }
+        }
+     }
+     
+     post {
+            success {
+                mail bcc: '', body: '''Hey Admin,
+                Your Build is successfull !!''', cc: '', from: '', replyTo: '', subject: 'Build Success', to: 'jktest@myapp.com'
+            }
+            failure {
+                mail bcc: '', body: '''Hey Admin,
+                Your Build is Failed !!''', cc: '', from: '', replyTo: '', subject: 'Build Failed', to: 'jktest@myapp.com'
+            }
+     }      
+}

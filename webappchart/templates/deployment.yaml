@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "myapp.name" . }}
+  labels:    
+       {{- include "myapp.labels" . | indent 4 }}
+spec:
+  template:
+     metadata:
+       name: {{ include "myapp.name" . }} 
+       labels:        
+           {{- include "myapp.labels" . | indent 8 }}
+     spec:
+         containers:
+           - name: {{ include "myapp.name" . }}
+             image: {{ .Values.myapp.image }}
+  replicas: {{ .Values.myapp.replicas }}
+  selector:
+    matchLabels:      
+         {{- include "myapp.labels" . | indent 6 }}
+

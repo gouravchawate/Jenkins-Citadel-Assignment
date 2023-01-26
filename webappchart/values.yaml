@@ -1,0 +1,8 @@
+myapp:
+  image: gourav01071997/mynginxapp:1.0
+  replicas: 1
+  service:
+    port: 80
+    protocol: TCP
+    targetport: 80
+    type: ClusterIP
